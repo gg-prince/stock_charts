@@ -1,4 +1,7 @@
-# East Africa Stock Screener
+# East Africa Stock Dashboard
+
+#Access now in terminal: ssh -p 2222 stocks@ggptrial.ooguy.com . password: betty
+#Demo: https://youtu.be/uFhvNZi8gi8
 
 A zero-dependency Node.js app that ranks the fastest-growing stocks on the **Rwanda (RSE), Nairobi (NSE), Dar es Salaam (DSE) and Uganda (USE)** exchanges. One data pipeline, three ways to use it:
 
@@ -121,64 +124,6 @@ Sessions close after 15 idle minutes. If there is no TTY, the app prints a singl
 | Corrupt cache file | Treated as unavailable, no crash |
 | Bad query values | Whitelisted to safe defaults; unknown routes return `404` with help; non-GET returns `405` |
 
-## Deployment (Web01, Web02, Lb01)
-
-Replace `<WEB01_IP>`, `<WEB02_IP>`, `<LB_IP>` with your servers' addresses.
-
-### 1. On Web01 and Web02 (repeat on both)
-
-```bash
-git clone <your-repo-url> && cd ea-stocks
-sudo ./deploy/setup-web.sh      # installs to /opt/ea-stocks, asks for the API key (hidden), starts the service, adds cron, runs the first fetch
-curl -s localhost:3000/health   # {"status":"ok","host":"web-01",...}
-curl -A curl localhost:3000/plain | head
-```
-
-What the script does: creates the unprivileged `eastocks` user; copies the app to `/opt/ea-stocks`; stores the key in `/etc/ea-stocks.env` (`chmod 640`, not in git); installs `deploy/ea-stocks-web.service` (systemd, hardened, port 3000, restarts on failure); installs `deploy/ea-stocks.cron` (09:00 and 13:30 UTC on weekdays = 12:00 and 16:30 East Africa Time); symlinks `/var/cache/ea-stocks.json` to the cache directory.
-
-### 2. SSH screener on Web01 and Web02
-
-```bash
-sudo STOCKS_PASSWORD='choose-a-password' ./deploy/setup-ssh.sh
-ssh stocks@<WEB01_IP>
-```
-
-This links `index.js` to `/usr/local/bin/ea-stocks`, creates the restricted `stocks` user, and appends this to `sshd_config`, validating with `sshd -t` before reloading:
-
-```
-Match User stocks
-    ForceCommand /usr/local/bin/ea-stocks
-    PermitTTY yes
-    AllowTcpForwarding no
-    X11Forwarding no
-    (plus AllowAgentForwarding no, PermitTunnel no, PermitUserRC no, MaxSessions 2)
-```
-
-`node` must be on the PATH that sshd gives non-login shells (normally `/usr/bin/node`).
-
-### 3. Load balancer on Lb01 (HAProxy)
-
-```bash
-sudo apt install -y haproxy
-sudo cp deploy/haproxy.cfg /etc/haproxy/haproxy.cfg
-sudo sed -i 's/WEB01_IP/<WEB01_IP>/g; s/WEB02_IP/<WEB02_IP>/g' /etc/haproxy/haproxy.cfg
-sudo haproxy -c -f /etc/haproxy/haproxy.cfg && sudo systemctl restart haproxy
-```
-
-The config uses **round-robin** between `web01:3000` and `web02:3000`, health-checks `GET /health` every 5 s (a server is removed after 2 failures and re-added after 2 successes), forwards the client IP (`X-Forwarded-For`), and adds `X-Lb-Served-By`. It also optionally balances SSH on port 2222. An nginx equivalent is in `deploy/nginx-lb.conf`.
-
-### 4. Verify load balancing
-
-```bash
-curl -A curl http://<LB_IP>/                 # works through the balancer
-./deploy/test-lb.sh http://<LB_IP> 10        # expect roughly: 5 web-01 / 5 web-02
-curl -sI http://<LB_IP>/ | grep -i served    # X-Served-By (the web server) + X-Lb-Served-By (HAProxy's choice)
-ssh -p 2222 stocks@<LB_IP>                   # SSH through the balancer
-```
-
-Failover test: `sudo systemctl stop ea-stocks-web` on Web01, then run the test script again. All requests should be answered by Web02 within about 10 s. Start the service again and Web01 rejoins.
-
-> Status: deployment files were written and syntax-checked, but I have not run them on your actual Web01/Web02/Lb01 (no access to them). Run the verification steps above and note any differences.
 
 ## Security and credentials
 
