@@ -1,0 +1,7 @@
+# /etc/cron.d/ea-stocks: refresh the stock cache twice per weekday.
+# Times are UTC: 09:00 and 13:30 UTC = 12:00 and 16:30 East Africa Time.
+# 2 runs x 4 exchanges = 8 API requests per day (free tier allows 100).
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/bin:/bin
+0 9 * * 1-5 eastocks set -a; . /etc/ea-stocks.env; set +a; node /opt/ea-stocks/fetch-data.js >> /var/log/ea-stocks-fetch.log 2>&1
+30 13 * * 1-5 eastocks set -a; . /etc/ea-stocks.env; set +a; node /opt/ea-stocks/fetch-data.js >> /var/log/ea-stocks-fetch.log 2>&1

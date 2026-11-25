@@ -1,0 +1,20 @@
+[Unit]
+Description=East Africa stock screener (HTTP)
+After=network.target
+
+[Service]
+User=eastocks
+Environment=PORT=3000
+Environment=EA_CACHE=/var/cache/ea-stocks/ea-stocks.json
+ExecStart=/usr/bin/env node /opt/ea-stocks/server.js
+Restart=always
+RestartSec=2
+# Hardening: the web process only reads the cache and never needs the API key.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
