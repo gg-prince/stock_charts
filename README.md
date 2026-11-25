@@ -7,8 +7,8 @@ A zero-dependency Node.js app that ranks the fastest-growing stocks on the **Rwa
 
 | Where | How | What you get |
 |---|---|---|
-| Browser | `http://<host>/` | Normal web page with filters |
-| Terminal over HTTP | `curl http://<host>/` | Coloured table rendered in the terminal (like wttr.in) |
+| Browser(only if running locally) | run node server.js on the root directory then `http://localhost:3000/` in your browser | Normal web page with filters |
+| Terminal over HTTP | `curl http://localhost:3000/` | Coloured table rendered in the terminal (like wttr.in) |
 | Terminal over SSH | `ssh stocks@<host>` | Interactive keyboard-driven screener |
 
 **Why it is useful:** East African markets are poorly covered by global finance sites. Students, young investors and analysts can open one screen and see which listed companies are moving, in local currency, filtered by industry and exchange, without installing anything.
