@@ -1,7 +1,7 @@
-# East Africa Stock Dashboard
+## East Africa Stock Dashboard
 
-**Access now in terminal**: ssh -p 2222 stocks@ggptrial.ooguy.com . password: betty
-**Demo**: https://youtu.be/uFhvNZi8gi8
+# Access now in terminal: **ssh -p 2222 stocks@ggptrial.ooguy.com** . **password: betty**
+# Demo: **https://youtu.be/uFhvNZi8gi8**
 
 A zero-dependency Node.js app that ranks the fastest-growing stocks on the **Rwanda (RSE), Nairobi (NSE), Dar es Salaam (DSE) and Uganda (USE)** exchanges. One data pipeline, three ways to use it:
 
